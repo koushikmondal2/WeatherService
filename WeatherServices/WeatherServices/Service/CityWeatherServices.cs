@@ -31,7 +31,10 @@ namespace WeatherServices.Service
                 foreach (var city in cities)
                 {
                     var cityweather = await GetCityWeather(city).ConfigureAwait(false);
-                    weatherStatus.Add(cityweather);
+                    if (cityweather != null)
+                    {
+                        weatherStatus.Add(cityweather);
+                    }
                 }
                 return weatherStatus.OrderBy(s => s.Temparature);
             }
@@ -53,7 +56,11 @@ namespace WeatherServices.Service
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
             HttpResponseMessage response = await client.SendAsync(request);
             string data = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            WeatherStatusModel payload = ExtractTemparedata(data);
+            WeatherStatusModel payload = null;
+            if (response.IsSuccessStatusCode)
+            {
+                payload = ExtractTemparedata(data);
+            }
             return payload;
         }
 
@@ -64,15 +71,20 @@ namespace WeatherServices.Service
         /// <returns></returns>
         private static WeatherStatusModel ExtractTemparedata(string data)
         {
-            var cityData = JsonConvert.DeserializeObject<IDictionary<string, object>>(data);
-            var temparatureData = JsonConvert.DeserializeObject<IDictionary<string, object>>(cityData["main"].ToString());
-            var payload = new WeatherStatusModel
+            WeatherStatusModel weatherStatus = null;
+            if (data != null)
             {
-                Index = Convert.ToInt32(cityData["id"]),
-                Name = cityData["name"].ToString(),
-                Temparature = Convert.ToDouble(temparatureData["temp"])
-            };
-            return payload;
+                var cityData = JsonConvert.DeserializeObject<IDictionary<string, object>>(data);
+                var temparatureData = JsonConvert.DeserializeObject<IDictionary<string, object>>(cityData["main"].ToString());
+                weatherStatus = new WeatherStatusModel
+                {
+                    Index = Convert.ToInt32(cityData["id"]),
+                    Name = cityData["name"].ToString(),
+                    Temparature = Convert.ToDouble(temparatureData["temp"])
+                };
+                
+            }
+            return weatherStatus;
         }
     }
 }
