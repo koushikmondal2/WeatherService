@@ -16,7 +16,7 @@ namespace WeatherServices.Biz
         }
 
         /// <summary>
-        /// Getting Weather Details from Service class  
+        /// Getting Weather Details from Service class Test 
         /// </summary>
         /// <param name="cities">Cities Details</param>
         /// <returns></returns>
